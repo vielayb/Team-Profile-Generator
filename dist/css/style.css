@@ -21,11 +21,29 @@ main {
 }
 
 .cards {
-    width: 30%;
-    height: 300px;
+    width: 40%;
+    height: 250px;
+    margin-top: 40px;
+    padding: 20px;
     background-color: yellow;
     border: 2px solid black;
 }
+
+.cards h3 {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.cards h5 {
+    margin-bottom: 30px;
+}
+
+.cards p {
+    height: 35px;
+    border: 1px solid black;
+    margin-bottom: 2px;
+}
+
 
 .container-2 {
     display: flex;

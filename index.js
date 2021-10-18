@@ -1,13 +1,12 @@
-const { getDiffieHellman } = require('crypto');
 const fs = require('fs');
 const inquirer = require('inquirer');
 const Employee = require('./lib/Employee');
 const Manager = require('./lib/Manager');
-
-// const Employee = require('../lib/Employee.js');
-// const Engineer = require('../lib/Engineer.js');
-// const Intern = require('../lib/Intern.js');
-
+const Engineer = require('./lib/Engineer.js');
+const Intern = require('./lib/Intern.js');
+const pageHTML = require('./src/pageHTML');
+const generatePage = require('./src/pageHTML');
+let employees = [];
 
 const promptManager = () => {
     return inquirer.prompt([
@@ -67,7 +66,6 @@ const promptManager = () => {
 };
 
 const promptOption = () => {
-
     return inquirer.prompt([
         {
             type: 'list',
@@ -132,7 +130,12 @@ const promptEngineer = () => {
                     }
                 }
             },
-        ]);
+        ]) .then(answers => {
+            const engineer = new Engineer(answers.name, answers.email, answers.id, answers.office);
+            engineer.role = engineer.getRole();
+            employees.push(engineer);
+            return
+        })
 }
 
 const promptIntern = () => {
@@ -178,7 +181,7 @@ const promptIntern = () => {
         },
         {
             type: 'input',
-            name: 'office',
+            name: 'school',
             message: 'What is intern school name',
             validate: nameInput => {
                 if (nameInput) {
@@ -189,54 +192,52 @@ const promptIntern = () => {
                 }
             }
         },
-    ]);
+    ]) .then(answers => {
+        const intern = new Intern(answers.name, answers.email, answers.id, answers.school);
+        intern.role = intern.getRole();
+        employees.push(intern);
+    })
 }
 
-// const addEmployee = () => {
-//     return inquirer.prompt([
-//         {
-//             type: 'confirm',
-//             name: 'feature',
-//             message: 'Would you like to add another employee?',
-//             default: false
-//           },
-//     ])
-// }
-
-// const nextEmployee = optionAnswers => {
-    // if (optionAnswers.option === 'Finish Team') {
-    //     return false;
-    // } 
-    // if (optionAnswers.option === 'Engineer') {
-    //     return  promptEngineer();
-    // }
-    // if (optionAnswers.option === 'Intern') {
-    //     return promptIntern();
-    // }
-
-// }
+const nextEmployee = optionAnswers => {
+    if (optionAnswers.option === 'Finish Team') {
+        return "Team Completed";
+    } 
+    if (optionAnswers.option === 'Engineer') {
+        return  promptEngineer() .then(promptOption) .then(nextEmployee);
+    }
+    if (optionAnswers.option === 'Intern') {
+        return promptIntern() .then(promptOption) .then(nextEmployee);
+    }
+    
+}
 
 promptManager()
     .then(answers => {
         console.log(answers)
         const manager = new Manager(answers.name, answers.email, answers.id, answers.office);
+        employees.push(manager)
+        manager.role = manager.getRole()
         console.log(manager);
+        console.log(manager.getRole());
     })
     .then(promptOption)
-    .then(optionAnswers => {
-        if (optionAnswers.option === 'Finish Team') {
-            return false;
-        } 
-        if (optionAnswers.option === 'Engineer') {
-            return  promptEngineer();
-        }
-        if (optionAnswers.option === 'Intern') {
-            return promptIntern();
-        }
+    .then(nextEmployee)
+    .then(nextAnswers => {
+        console.log("Hi")
+        console.log(employees)
+        writeToFile(pageHTML(employees));
     })
+
+function writeToFile(data) {
+    fs.writeFile('index.html', data, err => {
+        if (err) throw err;
+        console.log('Team Generator complete! Check out index.html to see the output!');
+        });
+}
 
 
     // manager.getName();
     // manager.getId();
     // manager.getEmail();
-    // manager.getRole();
+
